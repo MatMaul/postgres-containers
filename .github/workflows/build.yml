@@ -40,7 +40,7 @@ jobs:
       uses: docker/setup-qemu-action@v2.0.0
       with:
         image: tonistiigi/binfmt:qemu-v6.1.0
-        platforms: ${{ steps.docker-platforms.outputs.platforms }}
+        platforms: ${{ matrix.platforms }}
 
     - name: Docker meta
       id: docker-meta
