@@ -38,6 +38,9 @@ jobs:
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v2.0.0
+      with:
+        image: tonistiigi/binfmt:qemu-v6.1.0
+        platforms: ${{ steps.docker-platforms.outputs.platforms }}
 
     - name: Docker meta
       id: docker-meta
@@ -61,15 +64,6 @@ jobs:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Build and load
-      uses: docker/build-push-action@v3.0.0
-      with:
-        context: ${{ matrix.dir }}
-        file: ${{ matrix.file }}
-        push: false
-        load: true
-        tags: ${{ steps.docker-meta.outputs.tags }}
 
     - name: Build and push
       uses: docker/build-push-action@v3.0.0
