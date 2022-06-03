@@ -7,8 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  IMAGE_STAGING: cloudnative-pg/postgresql-testing
-  IMAGE_RELEASE: cloudnative-pg/postgresql
+  IMAGE_RELEASE: matmaul/cnpg-postgresql
 
 jobs:
   generate-jobs:
@@ -48,12 +47,7 @@ jobs:
         RESULT=""
         for tag in $(jq -r '.[]' <<< "${TAGS}")
         do
-          RESULT="${RESULT},ghcr.io/${IMAGE_STAGING}:${tag}"
-          # If we are running the pipeline in the main branch images are pushed in both -testing and PROD repo
-          if [ "${GITHUB_REF#refs/heads/}" == main ]
-          then
-            RESULT="${RESULT},ghcr.io/${IMAGE_RELEASE}:${tag}"
-          fi
+          RESULT="${RESULT},ghcr.io/${IMAGE_RELEASE}:${tag}"
         done
         echo "::set-output name=tags::${RESULT%,}"
 
@@ -76,14 +70,6 @@ jobs:
         push: false
         load: true
         tags: ${{ steps.docker-meta.outputs.tags }}
-
-    - name: Dockle scan
-      uses: erzz/dockle-action@v1.3.0
-      with:
-        image: "ghcr.io/${{ env.IMAGE_STAGING }}:${{ matrix.tags[0] }}"
-        exit-code: '1'
-        failure-threshold: WARN
-        accept-filenames: usr/share/cmake/Templates/Windows/Windows_TemporaryKey.pfx,etc/trusted-key.key,usr/share/doc/perl-IO-Socket-SSL/certs/server_enc.p12,usr/share/doc/perl-IO-Socket-SSL/certs/server.p12,usr/local/lib/python3.9/dist-packages/azure/core/settings.py,usr/local/lib/python3.8/site-packages/azure/core/settings.py,usr/share/postgresql-common/pgdg/apt.postgresql.org.asc,usr/local/lib/python3.7/dist-packages/azure/core/settings.py,etc/ssl/private/ssl-cert-snakeoil.key
 
     - name: Build and push
       uses: docker/build-push-action@v3.0.0
